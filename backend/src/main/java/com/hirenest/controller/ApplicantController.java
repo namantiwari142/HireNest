@@ -3,6 +3,7 @@ package com.hirenest.controller;
 import com.hirenest.dto.*;
 import com.hirenest.service.*;
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,12 +43,12 @@ public class ApplicantController {
         return ResponseEntity.ok(ApiResponse.ok(applicantService.updateProfile(request)));
     }
 
-    @PostMapping("/profile/resume")
+    @PostMapping(value = "/profile/resume", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<ApplicantProfileResponse>> uploadResume(@RequestParam("file") MultipartFile file) {
-        return ResponseEntity.ok(ApiResponse.ok(applicantService.uploadResume(file)));
+        return ResponseEntity.ok(ApiResponse.ok("Resume uploaded", applicantService.uploadResume(file)));
     }
 
-    @PostMapping("/profile/avatar")
+    @PostMapping(value = "/profile/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<ApplicantProfileResponse>> uploadAvatar(@RequestParam("file") MultipartFile file) {
         return ResponseEntity.ok(ApiResponse.ok(applicantService.uploadProfileImage(file)));
     }
