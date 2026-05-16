@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+frontend/dist/
+
+# Build
+backend/target/
+*.jar
+!backend/target/.gitkeep
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Env
+.env
+.env.local
+backend/.env
+frontend/.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
