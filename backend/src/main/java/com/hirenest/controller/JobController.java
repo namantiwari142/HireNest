@@ -46,8 +46,10 @@ public class JobController {
     }
 
     @GetMapping("/featured")
-    public ResponseEntity<ApiResponse<List<JobResponse>>> featured() {
-        return ResponseEntity.ok(ApiResponse.ok(jobService.getFeatured(6)));
+    public ResponseEntity<ApiResponse<List<JobResponse>>> featured(
+            @RequestParam(defaultValue = "12") int limit
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(jobService.getFeatured(Math.min(limit, 50))));
     }
 
     @GetMapping("/{id}")

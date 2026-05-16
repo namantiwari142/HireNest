@@ -14,8 +14,18 @@ export default function LandingPage() {
 
   const dashboardPath = user?.role === 'RECRUITER' ? '/recruiter/dashboard' : '/applicant/dashboard';
 
+  const loadFeatured = () => {
+    apiRequest('/api/jobs?page=0&size=12&sort=latest')
+      .then((r) => setFeatured(r.data?.content || []))
+      .catch(() => {
+        apiRequest('/api/jobs/featured?limit=12')
+          .then((res) => setFeatured(res.data || []))
+          .catch(() => setFeatured([]));
+      });
+  };
+
   useEffect(() => {
-    apiRequest('/api/jobs/featured').then((r) => setFeatured(r.data || [])).catch(() => {});
+    loadFeatured();
     apiRequest('/api/public/companies').then((r) => setCompanies(r.data || [])).catch(() => {});
     apiRequest('/api/public/skills').then((r) => setSkills(r.data || [])).catch(() => {});
   }, []);

@@ -87,8 +87,10 @@ public class JobService {
 
     @Transactional(readOnly = true)
     public List<JobResponse> getFeatured(int limit) {
-        return jobRepository.findAllActiveWithRecruiter().stream()
-                .limit(limit)
+        Sort sort = Sort.by(Sort.Order.desc("postedAt"), Sort.Order.desc("id"));
+        return jobRepository.findBrowsePage(PageRequest.of(0, limit, sort))
+                .getContent()
+                .stream()
                 .map(j -> enrichJobResponse(j, null))
                 .toList();
     }
@@ -189,12 +191,12 @@ public class JobService {
     }
 
     private Sort resolveSort(String sort) {
-        if (sort == null) return Sort.by(Sort.Direction.DESC, "postedAt");
-        return switch (sort) {
+        Sort primary = switch (sort != null ? sort : "latest") {
             case "salary_desc" -> Sort.by(Sort.Direction.DESC, "salaryMax");
             case "salary_asc" -> Sort.by(Sort.Direction.ASC, "salaryMin");
             case "experience" -> Sort.by(Sort.Direction.ASC, "experienceRequired");
             default -> Sort.by(Sort.Direction.DESC, "postedAt");
         };
+        return primary.and(Sort.by(Sort.Direction.DESC, "id"));
     }
 }
