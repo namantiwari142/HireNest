@@ -7,7 +7,14 @@ import { formatSalary } from '../../utils/format';
 export default function RecruiterJobs() {
   const [jobs, setJobs] = useState([]);
 
-  const load = () => apiRequest('/api/recruiter/jobs').then((r) => setJobs(r.data || []));
+  const load = () =>
+    apiRequest('/api/recruiter/jobs')
+      .then((r) => setJobs(r.data || []))
+      .catch((err) => {
+        toast.error(err.message || 'Failed to load jobs');
+        setJobs([]);
+      });
+
   useEffect(() => { load(); }, []);
 
   const remove = async (id) => {
@@ -24,6 +31,11 @@ export default function RecruiterJobs() {
         <Link to="/recruiter/post-job" className="btn-primary text-sm">Post Job</Link>
       </div>
       <div className="mt-6 space-y-3">
+        {jobs.length === 0 && (
+          <p className="text-muted text-center py-12">
+            No jobs yet. Post your first job to see it here and on the browse page.
+          </p>
+        )}
         {jobs.map((j) => (
           <div key={j.id} className="card flex flex-col sm:flex-row justify-between gap-4">
             <div>

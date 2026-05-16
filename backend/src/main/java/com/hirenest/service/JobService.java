@@ -13,6 +13,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -44,6 +45,7 @@ public class JobService {
         this.notificationService = notificationService;
     }
 
+    @Transactional(readOnly = true)
     public PageResponse<JobResponse> searchJobs(
             String keyword, String location, Double minSalary, Double maxSalary,
             String experience, String skill, WorkMode workMode, String company,
@@ -68,6 +70,7 @@ public class JobService {
         return new PageResponse<>(content, page, size, jobPage.getTotalElements(), jobPage.getTotalPages());
     }
 
+    @Transactional(readOnly = true)
     public JobResponse getJob(Long id, Long applicantUserId) {
         Job job = jobRepository.findByIdWithRecruiter(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
@@ -77,9 +80,12 @@ public class JobService {
         return enrichJobResponse(job, applicantId);
     }
 
+    @Transactional(readOnly = true)
     public List<JobResponse> getFeatured(int limit) {
-        return jobRepository.findAll(PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "postedAt")))
-                .getContent().stream().map(j -> enrichJobResponse(j, null)).toList();
+        return jobRepository.findAllActiveWithRecruiter().stream()
+                .limit(limit)
+                .map(j -> enrichJobResponse(j, null))
+                .toList();
     }
 
     @Transactional
@@ -90,8 +96,12 @@ public class JobService {
 
         Job job = mapRequestToJob(request, new Job());
         job.setRecruiter(recruiter);
+        job.setActive(true);
+        job.setPostedAt(Instant.now());
         job = jobRepository.save(job);
-        return JobMapper.toResponse(job);
+        return JobMapper.toResponse(
+                jobRepository.findByIdWithRecruiter(job.getId()).orElse(job)
+        );
     }
 
     @Transactional
@@ -109,13 +119,13 @@ public class JobService {
         jobRepository.save(job);
     }
 
+    @Transactional(readOnly = true)
     public List<JobResponse> getRecruiterJobs() {
         User user = securityUtils.getCurrentUser();
         Recruiter recruiter = recruiterRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Recruiter not found"));
-        return jobRepository.findAll().stream()
-                .filter(j -> j.getRecruiter().getId().equals(recruiter.getId()))
-                .map(j -> JobMapper.toResponse(j))
+        return jobRepository.findByRecruiterIdWithDetails(recruiter.getId()).stream()
+                .map(JobMapper::toResponse)
                 .toList();
     }
 
@@ -139,7 +149,8 @@ public class JobService {
         job.setJobType(request.getJobType());
         job.setWorkMode(request.getWorkMode());
         if (request.getSkills() != null) {
-            job.setSkills(request.getSkills());
+            job.getSkills().clear();
+            job.getSkills().addAll(request.getSkills());
         }
         return job;
     }

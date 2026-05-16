@@ -25,7 +25,7 @@ public final class JobSpecification {
     ) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.isTrue(root.get("active")));
+            predicates.add(cb.equal(root.get("active"), true));
 
             if (keyword != null && !keyword.isBlank()) {
                 String pattern = "%" + keyword.toLowerCase() + "%";
