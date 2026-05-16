@@ -22,6 +22,7 @@ import RecruiterDashboard from './pages/recruiter/RecruiterDashboard';
 import RecruiterJobs from './pages/recruiter/RecruiterJobs';
 import RecruiterPostJob from './pages/recruiter/RecruiterPostJob';
 import RecruiterApplications from './pages/recruiter/RecruiterApplications';
+import RecruiterApplicantProfile from './pages/recruiter/RecruiterApplicantProfile';
 
 const applicantLinks = [
   { to: '/applicant/dashboard', label: 'Dashboard', icon: '📊', end: true },
@@ -78,6 +79,7 @@ function AppRoutes() {
         <Route path="post-job" element={<RecruiterPostJob />} />
         <Route path="applications" element={<RecruiterApplications />} />
         <Route path="jobs/:jobId/applications" element={<RecruiterApplications />} />
+        <Route path="applicants/:applicantId" element={<RecruiterApplicantProfile />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

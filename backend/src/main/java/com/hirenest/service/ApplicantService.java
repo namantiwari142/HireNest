@@ -48,6 +48,7 @@ public class ApplicantService {
         return toResponse(getApplicant());
     }
 
+    @Transactional(readOnly = true)
     public ApplicantProfileResponse getProfileById(Long id) {
         Applicant applicant = applicantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Applicant not found"));
@@ -72,7 +73,7 @@ public class ApplicantService {
     @Transactional
     public ApplicantProfileResponse uploadResume(MultipartFile file) {
         Applicant applicant = getApplicant();
-        applicant.setResumeUrl(fileUploadService.uploadResume(file));
+        applicant.setResumeUrl(fileUploadService.uploadResume(file, applicant.getId()));
         applicant.setProfileCompletion(calculateCompletion(applicant));
         applicant = applicantRepository.save(applicant);
         return toResponse(applicant);
