@@ -51,10 +51,15 @@ public class JobService {
             String experience, String skill, WorkMode workMode, String company,
             String sort, int page, int size, Long applicantUserId
     ) {
-        Specification<Job> spec = JobSpecification.filter(keyword, location, minSalary, maxSalary,
-                experience, skill, workMode, company);
         Sort sortOrder = resolveSort(sort);
-        Page<Job> jobPage = jobRepository.findAll(spec, PageRequest.of(page, size, sortOrder));
+        Page<Job> jobPage;
+        if (hasSearchFilters(keyword, location, minSalary, maxSalary, experience, skill, workMode, company)) {
+            Specification<Job> spec = JobSpecification.filter(keyword, location, minSalary, maxSalary,
+                    experience, skill, workMode, company);
+            jobPage = jobRepository.findAll(spec, PageRequest.of(page, size, sortOrder));
+        } else {
+            jobPage = jobRepository.findBrowsePage(PageRequest.of(page, size, sortOrder));
+        }
 
         Long applicantId = null;
         if (applicantUserId != null) {
@@ -115,8 +120,7 @@ public class JobService {
     @Transactional
     public void deleteJob(Long id) {
         Job job = getOwnedJob(id);
-        job.setActive(false);
-        jobRepository.save(job);
+        jobRepository.delete(job);
     }
 
     @Transactional(readOnly = true)
@@ -162,6 +166,26 @@ public class JobService {
             r.setSaved(savedJobRepository.existsByApplicantIdAndJobId(applicantId, job.getId()));
         }
         return r;
+    }
+
+    private boolean hasSearchFilters(
+            String keyword,
+            String location,
+            Double minSalary,
+            Double maxSalary,
+            String experience,
+            String skill,
+            WorkMode workMode,
+            String company
+    ) {
+        return (keyword != null && !keyword.isBlank())
+                || (location != null && !location.isBlank())
+                || minSalary != null
+                || maxSalary != null
+                || (experience != null && !experience.isBlank())
+                || (skill != null && !skill.isBlank())
+                || workMode != null
+                || (company != null && !company.isBlank());
     }
 
     private Sort resolveSort(String sort) {

@@ -39,4 +39,17 @@ public interface JobRepository extends JpaRepository<Job, Long>, JpaSpecificatio
             ORDER BY j.postedAt DESC
             """)
     List<Job> findAllActiveWithRecruiter();
+
+    @Query(
+            value = """
+                    SELECT DISTINCT j FROM Job j
+                    JOIN FETCH j.recruiter r
+                    JOIN FETCH r.user
+                    WHERE j.active = true
+                    """,
+            countQuery = "SELECT COUNT(j) FROM Job j WHERE j.active = true"
+    )
+    Page<Job> findBrowsePage(Pageable pageable);
+
+    List<Job> findByActiveFalse();
 }

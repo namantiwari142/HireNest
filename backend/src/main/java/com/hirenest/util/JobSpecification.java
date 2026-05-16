@@ -25,7 +25,7 @@ public final class JobSpecification {
     ) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.equal(root.get("active"), true));
+            predicates.add(cb.isTrue(root.get("active")));
 
             if (keyword != null && !keyword.isBlank()) {
                 String pattern = "%" + keyword.toLowerCase() + "%";
@@ -38,10 +38,16 @@ public final class JobSpecification {
                 predicates.add(cb.like(cb.lower(root.get("location")), "%" + location.toLowerCase() + "%"));
             }
             if (minSalary != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("salaryMax"), minSalary));
+                predicates.add(cb.or(
+                        cb.isNull(root.get("salaryMax")),
+                        cb.greaterThanOrEqualTo(root.get("salaryMax"), minSalary)
+                ));
             }
             if (maxSalary != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("salaryMin"), maxSalary));
+                predicates.add(cb.or(
+                        cb.isNull(root.get("salaryMin")),
+                        cb.lessThanOrEqualTo(root.get("salaryMin"), maxSalary)
+                ));
             }
             if (experience != null && !experience.isBlank()) {
                 predicates.add(cb.like(cb.lower(root.get("experienceRequired")), "%" + experience.toLowerCase() + "%"));

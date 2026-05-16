@@ -39,6 +39,7 @@ public class Job {
     @Column(name = "skill")
     private List<String> skills = new ArrayList<>();
 
+    @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 1")
     private boolean active = true;
 
     @Column(nullable = false, updatable = false)

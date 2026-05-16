@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { apiRequest } from '../api/client';
 import { useJobActions } from '../hooks/useJobActions';
 import Navbar from '../components/Navbar';
@@ -39,7 +40,12 @@ export default function JobsPage() {
     setTotalPages(res.data.totalPages || 0);
   }, [filters, page]);
 
-  useEffect(() => { fetchJobs().catch(() => {}); }, [fetchJobs]);
+  useEffect(() => {
+    fetchJobs().catch((err) => {
+      toast.error(err.message || 'Could not load jobs');
+      setJobs([]);
+    });
+  }, [fetchJobs]);
 
   const { apply, save, messageRecruiter } = useJobActions(fetchJobs);
 
