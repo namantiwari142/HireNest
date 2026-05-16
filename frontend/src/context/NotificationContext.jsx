@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client/dist/sockjs';
-import { apiRequest, API_BASE } from '../api/client';
+import { apiRequest, getWebSocketUrl } from '../api/client';
 import { useAuth } from './AuthContext';
 
 const NotificationContext = createContext(null);
@@ -31,7 +31,7 @@ export function NotificationProvider({ children }) {
     if (!isAuthenticated || !user?.userId) return;
 
     const client = new Client({
-      webSocketFactory: () => new SockJS(`${API_BASE}/ws`),
+      webSocketFactory: () => new SockJS(getWebSocketUrl()),
       reconnectDelay: 5000,
       onConnect: () => {
         client.subscribe(`/topic/notifications/${user.userId}`, (msg) => {

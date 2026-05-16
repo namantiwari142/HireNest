@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client/dist/sockjs';
 import toast from 'react-hot-toast';
-import { apiRequest, API_BASE } from '../api/client';
+import { apiRequest, getWebSocketUrl } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import { timeAgo } from '../utils/format';
@@ -46,7 +46,7 @@ export default function ChatPage() {
   useEffect(() => {
     if (!user?.userId) return;
     const client = new Client({
-      webSocketFactory: () => new SockJS(`${API_BASE}/ws`),
+      webSocketFactory: () => new SockJS(getWebSocketUrl()),
       reconnectDelay: 5000,
       onConnect: () => {
         client.subscribe(`/topic/chat/${user.userId}`, (msg) => {

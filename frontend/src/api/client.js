@@ -1,6 +1,25 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+function normalizeBaseUrl(url) {
+  if (!url || typeof url !== 'string') return '';
+  return url.trim().replace(/\/+$/, '');
+}
+
+const envApiUrl = normalizeBaseUrl(import.meta.env.VITE_API_URL);
+const API_URL = envApiUrl || (import.meta.env.DEV ? 'http://localhost:8080' : '');
+
+if (import.meta.env.PROD && !API_URL) {
+  console.error('VITE_API_URL is not set. API requests will fail in production.');
+}
+
+function joinUrl(base, path) {
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  return `${base}${normalizedPath}`;
+}
 
 export async function apiRequest(path, options = {}) {
+  if (!API_URL) {
+    throw new Error('API URL is not configured. Set VITE_API_URL in your deployment environment.');
+  }
+
   const token = localStorage.getItem('hirenest_token');
   const headers = {
     ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
@@ -8,7 +27,7 @@ export async function apiRequest(path, options = {}) {
   };
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const response = await fetch(`${API_URL}${path}`, { ...options, headers });
+  const response = await fetch(joinUrl(API_URL, path), { ...options, headers });
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
@@ -34,3 +53,14 @@ export async function apiRequest(path, options = {}) {
 }
 
 export const API_BASE = API_URL;
+
+export function getWebSocketUrl() {
+  const wsEnv = normalizeBaseUrl(import.meta.env.VITE_WS_URL);
+  if (wsEnv) return wsEnv;
+  if (!API_URL) return '';
+  return joinUrl(API_URL, '/ws');
+}
+
+export function apiUrl(path) {
+  return joinUrl(API_URL, path);
+}

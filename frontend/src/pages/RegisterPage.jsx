@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
-import { API_BASE } from '../api/client';
+import { apiUrl } from '../api/client';
 import Logo from '../components/Logo';
 
 export default function RegisterPage() {
@@ -32,7 +32,7 @@ export default function RegisterPage() {
   };
 
   const oauthUrl = (provider) =>
-    `${API_BASE}/oauth2/authorization/${provider}?role=${tab === 'recruiter' ? 'RECRUITER' : 'APPLICANT'}`;
+    apiUrl(`/oauth2/authorization/${provider}?role=${tab === 'recruiter' ? 'RECRUITER' : 'APPLICANT'}`);
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">

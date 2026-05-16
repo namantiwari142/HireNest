@@ -70,7 +70,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         }
 
         String token = jwtService.generateToken(user);
-        String redirectUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/oauth/callback")
+        String base = frontendUrl == null ? "" : frontendUrl.trim().replaceAll("/+$", "");
+        String redirectUrl = UriComponentsBuilder.fromUriString(base + "/oauth/callback")
                 .queryParam("token", token)
                 .queryParam("role", user.getRole().name())
                 .queryParam("userId", user.getId())
